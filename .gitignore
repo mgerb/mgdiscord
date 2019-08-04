@@ -1,0 +1,7 @@
+.env
+
+/vendor
+/youtube-dl-cache
+
+**/*.mp3
+**/*.opus
