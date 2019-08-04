@@ -47,8 +47,15 @@ func Start(token string) {
 
 func mainHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
+	// create new connection for guild if not already exists
 	if connections[m.GuildID] == nil {
-		connections[m.GuildID] = &Connection{}
+		connections[m.GuildID] = &Connection{
+			paused:              true,
+			audioQueue:          make(chan *audioItem, 10),
+			playAudioInProgress: false,
+			skip:                make(chan bool, 1),
+			pause:               make(chan bool, 1),
+		}
 	}
 
 	conn := connections[m.GuildID]
@@ -59,7 +66,6 @@ func mainHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	// TODO:
 	if strings.HasPrefix(m.Content, config.Config.BotPrefix) {
 
 		content := strings.TrimPrefix(m.Content, config.Config.BotPrefix)
@@ -69,7 +75,11 @@ func mainHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		if strings.HasPrefix(content, "play") {
 			conn.joinUsersChannel(s, m)
 			args := strings.Split(strings.Trim(strings.TrimPrefix(content, "play"), " \n"), " ")
-			err = conn.playAudio(args)
+			err = conn.queueAudio(args)
+		} else if strings.HasPrefix(content, "skip") {
+			if conn.playAudioInProgress {
+				conn.skip <- true
+			}
 		}
 
 		if err != nil {

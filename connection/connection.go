@@ -12,7 +12,17 @@ import (
 
 // Connection -
 type Connection struct {
-	vc *discordgo.VoiceConnection
+	vc                  *discordgo.VoiceConnection
+	paused              bool
+	audioQueue          chan *audioItem
+	playAudioInProgress bool
+	skip                chan bool
+	pause               chan bool
+}
+
+type audioItem struct {
+	url      string
+	opusData [][]byte
 }
 
 // join users channel that sent the message
@@ -39,8 +49,7 @@ func (c *Connection) joinUsersChannel(s *discordgo.Session, m *discordgo.Message
 	return nil
 }
 
-func (c *Connection) playAudio(args []string) error {
-
+func (c *Connection) queueAudio(args []string) error {
 	if c.vc == nil || len(args) == 0 || args[0] == "" {
 		return errors.New("Invalid arguments: " + config.Config.BotPrefix + "play <url> <timestamp>")
 	}
@@ -60,15 +69,42 @@ func (c *Connection) playAudio(args []string) error {
 		return err
 	}
 
-	c.vc.Speaking(true)
-
-	for _, o := range opus {
-		c.vc.OpusSend <- o
+	item := &audioItem{
+		opusData: opus,
+		url:      args[0],
 	}
 
-	time.Sleep(time.Millisecond * 100)
+	c.audioQueue <- item
 
-	c.vc.Speaking(false)
+	go c.playAudioInQueue()
 
 	return nil
+}
+
+func (c *Connection) playAudioInQueue() {
+
+	if c.playAudioInProgress {
+		return
+	}
+
+	c.playAudioInProgress = true
+	c.vc.Speaking(true)
+
+	for len(c.audioQueue) > 0 {
+		item := <-c.audioQueue
+
+	forloop:
+		for _, o := range item.opusData {
+			select {
+			case c.vc.OpusSend <- o:
+				break
+			case <-c.skip:
+				break forloop
+			}
+		}
+		time.Sleep(time.Millisecond * 100)
+	}
+
+	c.vc.Speaking(false)
+	c.playAudioInProgress = false
 }
