@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  mgdiscord:
+    image: mgerb/mgdiscord:latest
+    env_file:
+      - .env
+    environment:
+    - BOT_PREFIX=${BOT_PREFIX}
+    - TOKEN=${TOKEN}
+    - TIMEOUT=${TIMEOUT}
+

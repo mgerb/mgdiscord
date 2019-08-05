@@ -1,0 +1,4 @@
+.env
+
+/vendor
+/youtube-dl-cache
