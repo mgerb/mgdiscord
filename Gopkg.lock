@@ -26,6 +26,12 @@
   version = "v1.3.0"
 
 [[projects]]
+  name = "github.com/kelseyhightower/envconfig"
+  packages = ["."]
+  revision = "0b417c4ec4a8a82eecc22a1459a504aa55163d61"
+  version = "v1.4.0"
+
+[[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
   packages = [
@@ -45,6 +51,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9c96f8523238756bfd93b4497adb88b2de45a8d17691390023017f5d38403973"
+  inputs-digest = "4001a0612d1b80f47ea77cab9e364aa19f821e9a15c8826fb45476bac5192a3e"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -52,6 +52,7 @@ func mainHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		connections[m.GuildID] = &Connection{
 			paused:              true,
 			audioQueue:          make(chan *audioItem, 10),
+			pausedItem:          make(chan *audioItem, 1),
 			playAudioInProgress: false,
 			skip:                make(chan bool, 1),
 			pause:               make(chan bool, 1),
@@ -70,16 +71,38 @@ func mainHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 		content := strings.TrimPrefix(m.Content, config.Config.BotPrefix)
 
+		switch content {
+
+		case "skip":
+			if conn.playAudioInProgress {
+				conn.skip <- true
+			}
+			// if paused already - remove item in paused queue
+			if conn.paused && len(conn.pausedItem) > 0 {
+				item := <-conn.pausedItem
+				item.Cleanup()
+				conn.playAudioInQueue()
+			}
+			break
+
+		case "pause":
+			if !conn.paused {
+				conn.pause <- true
+			}
+			break
+
+		case "resume":
+			if conn.paused {
+				conn.playAudioInQueue()
+			}
+		}
+
 		var err error
 
 		if strings.HasPrefix(content, "play") {
 			conn.joinUsersChannel(s, m)
 			args := strings.Split(strings.Trim(strings.TrimPrefix(content, "play"), " \n"), " ")
 			err = conn.queueAudio(args)
-		} else if strings.HasPrefix(content, "skip") {
-			if conn.playAudioInProgress {
-				conn.skip <- true
-			}
 		}
 
 		if err != nil {

@@ -34,8 +34,8 @@ func FileExists(path string) bool {
 
 // ExecuteCommand - execute command and log to stdout
 //
-// - timeout
-func ExecuteCommand(name string, timeout time.Duration, arg ...string) error {
+// - timeout - in seconds
+func ExecuteCommand(name string, timeout int, arg ...string) error {
 	cmd := exec.Command(name, arg...)
 
 	var stdBuffer bytes.Buffer
@@ -58,9 +58,11 @@ func ExecuteCommand(name string, timeout time.Duration, arg ...string) error {
 	}()
 
 	go func() {
-		time.Sleep(time.Second * timeout)
-		cmd.Process.Kill()
+		time.Sleep(time.Second * time.Duration(timeout))
 		timeoutchan <- true
+		if cmd.Process != nil {
+			cmd.Process.Kill()
+		}
 	}()
 
 	select {

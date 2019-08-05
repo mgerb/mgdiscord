@@ -2,7 +2,8 @@ package config
 
 import (
 	"log"
-	"os"
+
+	"github.com/kelseyhightower/envconfig"
 
 	"github.com/joho/godotenv"
 )
@@ -11,8 +12,9 @@ import (
 var Config = &configType{}
 
 type configType struct {
-	Token     string
-	BotPrefix string
+	Token     string `required:"true"`
+	BotPrefix string `default:"!" split_words:"true"`
+	Timeout   int    `default:"30"`
 }
 
 // Init -
@@ -23,15 +25,9 @@ func Init() {
 		log.Println("No .env file found")
 	}
 
-	Config.Token = os.Getenv("TOKEN")
-	Config.BotPrefix = os.Getenv("BOT_PREFIX")
+	err = envconfig.Process("", Config)
 
-	if Config.Token == "" {
-		log.Fatal("Please specify environment variable: TOKEN")
-	}
-
-	if Config.BotPrefix == "" {
-		log.Println("BOT_PREFIX not set - defaulting to !")
-		Config.BotPrefix = "!"
+	if err != nil {
+		log.Fatal(err)
 	}
 }

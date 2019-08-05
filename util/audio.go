@@ -13,46 +13,52 @@ import (
 
 const fileFolder = "youtube-dl-cache"
 
+// OpusWritable -
+type OpusWritable interface {
+	OpusChan() chan []byte
+	IsClosed() bool
+}
+
 // initialize temp file paths
 func init() {
 	MakeDirIfNotExists(fileFolder)
 }
 
-// GetOpusFromLink - use youtube dl to extract opus data from url
+// DownloadFromLink - use youtube-dl to download file - returns file path
 //
-// - timestamp - format 00:00:00
-func GetOpusFromLink(url, timestamp string) ([][]byte, error) {
+// - timeout - in seconds
+func DownloadFromLink(url string, timeout int) (string, error) {
 
 	urlHash := GetSha1(url)
 	fullFileName, err := FindFullFilePath(fileFolder, urlHash)
 
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	// download and extract audio if file doesn't already exist
 	if !FileExists(fullFileName) {
-		err := ExecuteCommand("youtube-dl", 30, "-o", path.Join(fileFolder, urlHash)+".%(ext)s", url)
+		err := ExecuteCommand("youtube-dl", timeout, "-f", "best[filesize<100M]/worst", "-o", path.Join(fileFolder, urlHash)+".%(ext)s", url)
 
 		if err != nil {
 			cleanupFailedFiles(fileFolder, urlHash)
-			return nil, err
+			return "", err
 		}
 
 		fullFileName, err = FindFullFilePath(fileFolder, urlHash)
 
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 	}
 
-	data, err := GetFileOpusData(fullFileName, 2, 960, 48000, timestamp)
-
-	return data, err
+	return fullFileName, nil
 }
 
-// GetFileOpusData - uses ffmpeg to convert any audio
+// WriteOpusData - uses ffmpeg to convert any audio
 // file to opus data ready to send to discord
+//
+// - writes to OpusWritable
 //
 // - channels - 2
 //
@@ -61,7 +67,7 @@ func GetOpusFromLink(url, timestamp string) ([][]byte, error) {
 // - sampleRate - 48000
 //
 // - timestamp - format 00:00:00 - start at specified time
-func GetFileOpusData(filePath string, channels, opusFrameSize, sampleRate int, timestamp string) ([][]byte, error) {
+func WriteOpusData(filePath string, channels, opusFrameSize, sampleRate int, timestamp string, opusWriteable OpusWritable) error {
 
 	args := []string{"-i", filePath, "-f", "s16le", "-acodec", "pcm_s16le", "-ar", strconv.Itoa(sampleRate), "-ac", strconv.Itoa(channels)}
 
@@ -76,7 +82,7 @@ func GetFileOpusData(filePath string, channels, opusFrameSize, sampleRate int, t
 	cmdout, err := cmd.StdoutPipe()
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	pcmdata := bufio.NewReader(cmdout)
@@ -84,29 +90,27 @@ func GetFileOpusData(filePath string, channels, opusFrameSize, sampleRate int, t
 	err = cmd.Start()
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// create encoder to convert audio to opus codec
 	opusEncoder, err := opus.NewEncoder(sampleRate, channels, opus.AppVoIP)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	opusOutput := make([][]byte, 0)
 
 	for {
 		// read pcm data from ffmpeg stdout
 		audiobuf := make([]int16, opusFrameSize*channels)
 		err = binary.Read(pcmdata, binary.LittleEndian, &audiobuf)
 
-		if err == io.EOF || err == io.ErrUnexpectedEOF {
-			return opusOutput, nil
+		if err == io.EOF || err == io.ErrUnexpectedEOF || opusWriteable.IsClosed() {
+			return nil
 		}
 
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		// convert raw pcm to opus
@@ -114,11 +118,10 @@ func GetFileOpusData(filePath string, channels, opusFrameSize, sampleRate int, t
 		n, err := opusEncoder.Encode(audiobuf, opus)
 
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		// append bytes to output
-		opusOutput = append(opusOutput, opus[:n])
+		opusWriteable.OpusChan() <- opus[:n]
 	}
 }
 
