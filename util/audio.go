@@ -38,7 +38,7 @@ func DownloadFromLink(url string, timeout int) (string, error) {
 
 	// download and extract audio if file doesn't already exist
 	if !FileExists(fullFileName) {
-		err := ExecuteCommand("youtube-dl", timeout, "-f", "best[filesize<100M]/worst", "-o", path.Join(fileFolder, urlHash)+".%(ext)s", url)
+		err := ExecuteCommand("youtube-dl", timeout, "-f", "best[filesize<100M]/worst/bestvideo+bestaudio/best", "-o", path.Join(fileFolder, urlHash)+".%(ext)s", url)
 
 		if err != nil {
 			cleanupFailedFiles(fileFolder, urlHash)
