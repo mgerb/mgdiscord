@@ -75,6 +75,8 @@ func WriteOpusData(filePath string, channels, opusFrameSize, sampleRate int, tim
 		args = append(args, "-ss", timestamp)
 	}
 
+	// TODO: volume based on user input
+	args = append(args, "-filter:a", "volume=0.5")
 	args = append(args, "pipe:1")
 
 	cmd := exec.Command("ffmpeg", args...)
