@@ -66,8 +66,10 @@ func DownloadFromLink(url string, timeout int) (string, error) {
 //
 // - sampleRate - 48000
 //
+// - volume - between 0.0 and 1.0
+//
 // - timestamp - format 00:00:00 - start at specified time
-func WriteOpusData(filePath string, channels, opusFrameSize, sampleRate int, timestamp string, opusWriteable OpusWritable) error {
+func WriteOpusData(filePath string, channels, opusFrameSize, sampleRate int, timestamp string, volume float64, opusWriteable OpusWritable) error {
 
 	args := []string{"-i", filePath, "-f", "s16le", "-acodec", "pcm_s16le", "-ar", strconv.Itoa(sampleRate), "-ac", strconv.Itoa(channels)}
 
@@ -75,8 +77,7 @@ func WriteOpusData(filePath string, channels, opusFrameSize, sampleRate int, tim
 		args = append(args, "-ss", timestamp)
 	}
 
-	// TODO: volume based on user input
-	args = append(args, "-filter:a", "volume=0.5")
+	args = append(args, "-filter:a", "volume="+strconv.FormatFloat(volume, 'f', 2, 64))
 	args = append(args, "pipe:1")
 
 	cmd := exec.Command("ffmpeg", args...)
