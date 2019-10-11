@@ -5,11 +5,9 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/mgerb/mgdiscord/config"
 )
 
 // keep our own connection state for each guild
@@ -56,62 +54,13 @@ func mainHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 			playAudioInProgress: false,
 			skip:                make(chan bool, 1),
 			pause:               make(chan bool, 1),
+			volume:              0.5,
 		}
 	}
 
 	conn := connections[m.GuildID]
 
-	// Ignore all messages created by the bot itself
-	// This isn't required in this specific example but it's a good practice.
-	if m.Author.ID == s.State.User.ID {
-		return
+	if conn != nil {
+		conn.handleMessage(s, m)
 	}
-
-	if strings.HasPrefix(m.Content, config.Config.BotPrefix) {
-
-		content := strings.TrimPrefix(m.Content, config.Config.BotPrefix)
-
-		switch content {
-
-		case "skip":
-			if conn.playAudioInProgress {
-				conn.skip <- true
-			}
-			// if paused already - remove item in paused queue
-			if conn.paused && len(conn.pausedItem) > 0 {
-				item := <-conn.pausedItem
-				item.Cleanup()
-				conn.playAudioInQueue()
-			}
-			break
-
-		case "pause":
-			if !conn.paused {
-				conn.pause <- true
-			}
-			break
-
-		case "resume":
-			if conn.paused {
-				conn.playAudioInQueue()
-			}
-		}
-
-		var err error
-
-		if strings.HasPrefix(content, "play") {
-			conn.joinUsersChannel(s, m)
-			args := strings.Split(strings.Trim(strings.TrimPrefix(content, "play"), " \n"), " ")
-			err = conn.queueAudio(args)
-		}
-
-		if err != nil {
-			log.Println(err)
-			sendMessage(s, m, err.Error())
-		}
-	}
-}
-
-func sendMessage(s *discordgo.Session, m *discordgo.MessageCreate, content string) {
-	s.ChannelMessageSend(m.ChannelID, "```\n"+content+"\n```")
 }
