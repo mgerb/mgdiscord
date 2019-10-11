@@ -154,26 +154,29 @@ func (c *Connection) queueAudio(s *discordgo.Session, m *discordgo.MessageCreate
 	}
 
 	var timestamp string
+	queryString := args[0]
 
-	if len(args) > 1 {
+	// use youtube-dl search query if input is not a url
+	if !util.IsURL(args[0]) {
+		queryString = "ytsearch1:" + strings.Join(args, " ")
+	} else if len(args) > 1 {
 		timestamp, _ = util.ParseTimeStamp(args[1])
 	} else {
 		timestamp, _ = util.ParseTimeStampFromURL(args[0])
 	}
 
+	filePath, err := util.DownloadMedia(queryString, config.Config.Timeout)
+
+	if err != nil {
+		return err
+	}
+
 	item := &audioItem{
-		url:      args[0],
 		opusData: make(chan []byte, 1000),
 		dead:     false,
 	}
 
 	c.audioQueue <- item
-
-	filePath, err := util.DownloadFromLink(args[0], config.Config.Timeout)
-
-	if err != nil {
-		return err
-	}
 
 	go util.WriteOpusData(filePath, channels, frameSize, sampleRate, timestamp, c.volume, item)
 
