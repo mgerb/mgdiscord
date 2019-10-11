@@ -164,3 +164,9 @@ func ParseTimeStamp(timestamp string) (string, error) {
 
 	return zeroTime.Add(dur).Format("15:04:05"), nil
 }
+
+// IsURL - check if string is valid url
+func IsURL(urlString string) bool {
+	_, err := url.ParseRequestURI(urlString)
+	return err == nil
+}

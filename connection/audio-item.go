@@ -1,7 +1,6 @@
 package connection
 
 type audioItem struct {
-	url      string
 	opusData chan []byte
 	dead     bool // set to true if needs to be cleaned up
 }

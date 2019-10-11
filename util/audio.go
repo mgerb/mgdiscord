@@ -24,12 +24,14 @@ func init() {
 	MakeDirIfNotExists(fileFolder)
 }
 
-// DownloadFromLink - use youtube-dl to download file - returns file path
+// DownloadMedia - use youtube-dl to download file - returns file path
+//
+// - queryString - youtube-dl search query
 //
 // - timeout - in seconds
-func DownloadFromLink(url string, timeout int) (string, error) {
+func DownloadMedia(queryString string, timeout int) (string, error) {
 
-	urlHash := GetSha1(url)
+	urlHash := GetSha1(queryString)
 	fullFileName, err := FindFullFilePath(fileFolder, urlHash)
 
 	if err != nil {
@@ -38,7 +40,7 @@ func DownloadFromLink(url string, timeout int) (string, error) {
 
 	// download and extract audio if file doesn't already exist
 	if !FileExists(fullFileName) {
-		err := ExecuteCommand("youtube-dl", timeout, "-f", "best[filesize<100M]/worst/bestvideo+bestaudio/best", "-o", path.Join(fileFolder, urlHash)+".%(ext)s", url)
+		err := ExecuteCommand("youtube-dl", timeout, "-f", "best[filesize<100M]/worst/bestvideo+bestaudio/best", "-o", path.Join(fileFolder, urlHash)+".%(ext)s", queryString)
 
 		if err != nil {
 			cleanupFailedFiles(fileFolder, urlHash)
