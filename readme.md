@@ -14,7 +14,7 @@ to play audio from a wide variety of sources. [See the list of supported sites h
 
 ## Commands
 
-- play \<url\> <optional timestamp> | \<youtube search query\> - add a valid URL or youtube search to the play queue
+- play \<url\> \<optional timestamp\> | \<youtube search query\> - add a valid URL or youtube search to the play queue
   - timestamp - start an audio track at a specific timestamp
   - e.g. !play https://www.youtube.com/watch?v=oHg5SJYRHA0 1m13s
   - NOTE: a Youtube URL with timestamp in the query string will start playing at that time
