@@ -13,9 +13,10 @@ import (
 )
 
 const (
-	channels   = 2
-	frameSize  = 960
-	sampleRate = 48000
+	channels      = 2
+	frameSize     = 960
+	sampleRate    = 48000
+	thumbsUpEmoji = "👍"
 )
 
 // Connection -
@@ -75,10 +76,9 @@ func (c *Connection) handleMessage(s *discordgo.Session, m *discordgo.MessageCre
 			break
 
 		case "play":
+			c.addReaction(s, m, thumbsUpEmoji)
 			err = c.queueAudio(s, m, args)
-
 			break
-
 		case "volume":
 			err = c.setVolume(s, m, args)
 			break
@@ -88,6 +88,13 @@ func (c *Connection) handleMessage(s *discordgo.Session, m *discordgo.MessageCre
 			log.Println(err)
 			c.sendMessage(s, m, err.Error())
 		}
+	}
+}
+
+func (c *Connection) addReaction(s *discordgo.Session, m *discordgo.MessageCreate, emoji string) {
+	err := s.MessageReactionAdd(m.ChannelID, m.ID, emoji)
+	if err != nil {
+		log.Println(err)
 	}
 }
 
