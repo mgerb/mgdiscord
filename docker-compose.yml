@@ -1,12 +1,13 @@
-version: '3'
+version: "3"
 
 services:
   mgdiscord:
     image: mgerb/mgdiscord:latest
+    volumes:
+      - /usr/local/bin/youtube-dl:/usr/local/bin/youtube-dl:ro
     env_file:
       - .env
     environment:
-    - BOT_PREFIX=${BOT_PREFIX}
-    - TOKEN=${TOKEN}
-    - TIMEOUT=${TIMEOUT}
-
+      - BOT_PREFIX=${BOT_PREFIX}
+      - TOKEN=${TOKEN}
+      - TIMEOUT=${TIMEOUT}

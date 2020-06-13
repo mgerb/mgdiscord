@@ -22,7 +22,7 @@ func Init() {
 	err := godotenv.Load()
 
 	if err != nil {
-		log.Println("No .env file found")
+		log.Println("No .env file found - using environment variables")
 	}
 
 	err = envconfig.Process("", Config)

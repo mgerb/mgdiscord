@@ -27,18 +27,23 @@ to play audio from a wide variety of sources. [See the list of supported sites h
 ## Run with Docker Compose
 
 I highly suggest running this with Docker as I am not currently compiling binaries.
-This bot depends on youtube-dl, which is provided by the Docker image.
+This bot depends on youtube-dl, which must be provided by the host. This was previously
+provided by the container, but youtube-dl needs to be updated too much for this now.
 
 ```
-version: '3'
+version: "3"
 
 services:
   mgdiscord:
     image: mgerb/mgdiscord:latest
+    volumes:
+      - /usr/local/bin/youtube-dl:/usr/local/bin/youtube-dl:ro
+    env_file:
+      - .env
     environment:
-    - BOT_PREFIX=!
-    - TOKEN=YOUR_BOT_TOKEN
-    - TIMEOUT=30
+      - BOT_PREFIX=${BOT_PREFIX}
+      - TOKEN=${TOKEN}
+      - TIMEOUT=${TIMEOUT}
 ```
 
 ### Config
