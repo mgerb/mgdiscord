@@ -7,7 +7,15 @@ import (
 )
 
 func getVoiceChannelID(s *discordgo.Session, m *discordgo.MessageCreate) (string, error) {
-	guild, err := s.Guild(m.GuildID)
+
+	c, err := s.State.Channel(m.ChannelID)
+
+	if err != nil {
+		return "", err
+	}
+
+	guild, err := s.State.Guild(c.GuildID)
+
 	if err != nil {
 		return "", err
 	}

@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -36,6 +37,9 @@ func FileExists(path string) bool {
 //
 // - timeout - in seconds
 func ExecuteCommand(name string, timeout int, arg ...string) error {
+
+	fmt.Println("Executing: '", name, arg, "'")
+
 	cmd := exec.Command(name, arg...)
 
 	var stdBuffer bytes.Buffer

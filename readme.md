@@ -1,8 +1,7 @@
 # MGDiscord
 https://cloud.docker.com/repository/docker/mgerb/mgdiscord
 
-The discord bot that plays everything. This bot is similar to other music bots, but it uses youtube-dl
-to play audio from a wide variety of sources. [See the list of supported sites here](https://ytdl-org.github.io/youtube-dl/supportedsites.html).
+The discord bot that plays everything. This bot is similar to other music bots, but it uses yt-dlp.
 
 ## Features
 
@@ -27,8 +26,8 @@ to play audio from a wide variety of sources. [See the list of supported sites h
 ## Run with Docker Compose
 
 I highly suggest running this with Docker as I am not currently compiling binaries.
-This bot depends on youtube-dl, which must be provided by the host. This was previously
-provided by the container, but youtube-dl needs to be updated too much for this now.
+This bot depends on yt-dlp, which must be provided by the host. This was previously
+provided by the container, but yt-dlp needs to be updated too much for this now.
 
 ```
 version: "3"
@@ -37,7 +36,7 @@ services:
   mgdiscord:
     image: mgerb/mgdiscord:latest
     volumes:
-      - /usr/local/bin/youtube-dl:/usr/local/bin/youtube-dl:ro
+      - /usr/local/bin/yt-dlp:/usr/local/bin/yt-dlp:ro
     env_file:
       - .env
     environment:

@@ -1,12 +1,10 @@
-FROM golang:1.14.4-alpine3.12
+FROM golang:1.19.0-alpine3.16
 
 RUN apk add --no-cache git alpine-sdk pkgconfig opus-dev opusfile-dev
 
 WORKDIR /go/src/github.com/mgerb/mgdiscord
 
 ADD . .
-RUN go get -u github.com/golang/dep/cmd/dep
-RUN dep ensure
 RUN go build -o /build/bot .
 
 
