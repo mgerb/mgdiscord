@@ -1,4 +1,5 @@
 # MGDiscord
+
 https://cloud.docker.com/repository/docker/mgerb/mgdiscord
 
 The discord bot that plays everything. This bot is similar to other music bots, but it uses yt-dlp.
@@ -21,7 +22,6 @@ The discord bot that plays everything. This bot is similar to other music bots, 
 - pause - pause current playing track
 - resume - resume playing current track
 - volume \<1 - 100\> - set the volume 1 through 100
-
 
 ## Run with Docker Compose
 
@@ -49,4 +49,4 @@ services:
 
 - BOT_PREFIX - the prefix to your bot commands e.g. "!play rick roll"
 - TOKEN - [How to get your bot token](https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token)
-- TIMEOUT - how long before the bot times out downloading a media file
+- TIMEOUT - how many seconds before the bot times out downloading a media file

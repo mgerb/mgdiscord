@@ -1,7 +1,7 @@
 module github.com/mgerb/mgdiscord
 
 require (
-	github.com/bwmarrin/discordgo v0.26.1
+	github.com/bwmarrin/discordgo v0.27.1
 	github.com/hraban/opus v0.0.0-20180426093920-0f2e0b4fc6cd
 	github.com/joho/godotenv v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
